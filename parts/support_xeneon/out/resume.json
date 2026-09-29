@@ -12,25 +12,37 @@
       "nom": "pied_gauche",
       "stl": "support_xeneon_pied_gauche.stl",
       "dimensions_mm": [
-        198.25,
+        51.25,
         113.27,
         111.89
       ],
-      "volume_cm3": 218.27,
+      "volume_cm3": 115.61,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
+    },
+    {
+      "nom": "pied_centre",
+      "stl": "support_xeneon_pied_centre.stl",
+      "dimensions_mm": [
+        294.0,
+        113.27,
+        111.89
+      ],
+      "volume_cm3": 164.81,
+      "tient_dans_h2d": true,
+      "couleur": "#e68c26"
     },
     {
       "nom": "pied_droite",
       "stl": "support_xeneon_pied_droite.stl",
       "dimensions_mm": [
-        193.25,
+        51.25,
         113.27,
         111.89
       ],
-      "volume_cm3": 181.26,
+      "volume_cm3": 115.61,
       "tient_dans_h2d": true,
-      "couleur": "#e68c26"
+      "couleur": "#4cb266"
     },
     {
       "nom": "coque_gauche",
@@ -80,6 +92,8 @@
     "FLANC_LARGEUR": 18.0,
     "RECOUVREMENT_FLANC": 1.0,
     "ASSISE": 2.0,
+    "CONGE_ARRIERE": 20.0,
+    "COUPE_X": 142.0,
     "JEU_PLOT": 0.2,
     "ECART_ECRAN": 0.2,
     "AIMANT_D": 8.0,

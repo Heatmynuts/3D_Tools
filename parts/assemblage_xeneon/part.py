@@ -30,11 +30,12 @@ if __name__ == "__main__":
 
     vers_coque = pied.placement() * Pos(0, 0, -coque.Z_CAVITE)
     c_gauche, c_droite = coque.build_moities()
-    p_gauche, p_droite = pied.build_parties()
+    p_gauche, p_centre, p_droite = pied.build_parties()
     pieces = {
         "coque_gauche": vers_coque * c_gauche,
         "coque_droite": vers_coque * c_droite,
         "pied_gauche": p_gauche,
+        "pied_centre": p_centre,
         "pied_droite": p_droite,
     }
     ecran = vers_coque * coque.ecran_en_place()

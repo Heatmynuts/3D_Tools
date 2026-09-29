@@ -60,6 +60,8 @@ JEU_PIED = 0.5             # jeu coque / berceau
 FLANC_LARGEUR = 18.0       # flancs d'extrémité (le long de l'écran)
 RECOUVREMENT_FLANC = 1.0   # pénétration du flanc dans la plaque (fusion)
 ASSISE = 2.0               # hauteur rabotée sous l'arête avant → semelle plate (adhérence, stabilité)
+CONGE_ARRIERE = 20.0       # congé du coin arrière-bas des flancs
+COUPE_X = 142.0            # coupes du pied à X = ±142 (loin de la jonction coque à X = 0)
 
 JEU_PLOT = 0.2             # jeu plot / trou de coque (plage Bambu 0,15–0,3)
 ECART_ECRAN = 0.2          # le plot s'arrête à cette distance du dos de l'écran
@@ -139,8 +141,14 @@ def build_flancs():
     """Flancs triangulaires (repère bureau), découpés au contour du berceau."""
     y_av, z_av = vers_bureau(-B_W / 2, Z_PLAQUE + RECOUVREMENT_FLANC)
     y_ar, z_ar = vers_bureau(B_W / 2, Z_PLAQUE + RECOUVREMENT_FLANC)
-    z_bas = min(0.0, z_av) - 1.0          # sous le bureau ; rogné ensuite à z = 0
-    profil = [(y_av, z_bas), (y_av, z_av), (y_ar, z_ar), (y_ar, z_bas)]
+    if z_av < 0:  # l'hypoténuse coupe le bureau : triangle posé à z = 0
+        y0 = y_av + (0 - z_av) * (y_ar - y_av) / (z_ar - z_av)
+        profil = [(y0, 0.0), (y_ar, z_ar), (y_ar, 0.0)]
+    else:
+        profil = [(y_av, 0.0), (y_av, z_av), (y_ar, z_ar), (y_ar, 0.0)]
+    face = make_face(Polyline(*profil, close=True)).faces()[0]
+    coin = [v for v in face.vertices() if abs(v.X - y_ar) < 1e-6 and abs(v.Y) < 1e-6]
+    face = face.fillet_2d(CONGE_ARRIERE, coin)      # congé généreux du coin arrière-bas
     flancs = []
     # Contour du berceau prolongé perpendiculairement à la plaque (repère écran), puis placé
     gabarit = placement() * (
@@ -149,7 +157,7 @@ def build_flancs():
     for sx in (-1, 1):
         x0 = sx * B_L / 2 - (FLANC_LARGEUR if sx > 0 else 0)
         plan = Plane(origin=(x0, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0))
-        prisme = extrude(plan.from_local_coords(make_face(Polyline(*profil, close=True))), amount=FLANC_LARGEUR)
+        prisme = extrude(plan.from_local_coords(face), amount=FLANC_LARGEUR)
         flanc = prisme & gabarit
         if flanc.volume < 1:
             raise ValueError("flanc vide : profil invalide (vérifier ANGLE / ASSISE)")
@@ -157,28 +165,59 @@ def build_flancs():
     return flancs
 
 
-def _joint(piece, peau: float, longueur: float):
+def _joint(piece, x0: float, sens: float, peau: float, longueur: float):
+    """Prisme issu de la section de `piece` au plan X = x0, réduite de `peau`, prolongé vers `sens`."""
     solides = []
-    for f in piece.intersect(Plane.YZ).faces():
+    for f in piece.intersect(Plane.YZ.offset(x0)).faces():
         for g in offset(f, amount=-peau).faces():
             if g.area > 1:
-                solides.append(extrude(g, amount=longueur, dir=(1, 0, 0)))
+                solides.append(extrude(g, amount=longueur, dir=(sens, 0, 0)))
     return solides
 
 
 def build_parties():
+    """3 parties : embout gauche | centre | embout droit.
+
+    Coupes à X = ±COUPE_X, décalées de la jonction de la coque (X = 0) : le centre du pied
+    ponte la jonction de la coque (joints en quinconce). Languettes sur le centre, rainures aux embouts.
+    """
     pied = placement() * build_berceau()
     for f in build_flancs():
         pied += f
     grand = 4 * B_L
     pied = pied & Box(grand, grand, grand, align=(Align.CENTER, Align.CENTER, Align.MIN))  # semelle z = 0
-    gauche = pied & Box(grand, grand, grand, align=(Align.MAX, Align.CENTER, Align.CENTER))
-    droite = pied & Box(grand, grand, grand, align=(Align.MIN, Align.CENTER, Align.CENTER))
-    for languette in _joint(pied, coque.LANGUETTE_PEAU + coque.JEU_LANGUETTE, coque.LANGUETTE_PROF):
-        gauche += languette
-    for rainure in _joint(pied, coque.LANGUETTE_PEAU, coque.LANGUETTE_PROF + coque.PROFONDEUR_MARGE):
-        droite -= rainure
-    return gauche, droite
+    gauche = pied & Pos(-COUPE_X, 0, 0) * Box(grand, grand, grand, align=(Align.MAX, Align.CENTER, Align.CENTER))
+    droite = pied & Pos(COUPE_X, 0, 0) * Box(grand, grand, grand, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    centre = pied & Box(2 * COUPE_X, grand, grand)
+    lang = coque.LANGUETTE_PEAU + coque.JEU_LANGUETTE
+    prof = coque.LANGUETTE_PROF + coque.PROFONDEUR_MARGE
+    # Languettes sur le centre (imprimé à plat : languettes plates, sans surplomb) ;
+    # rainures dans les embouts (imprimés debout : rainures inclinées à 45°, sans support).
+    # Dans la plaque, la languette descend jusqu'au dos (feuillure) : sinon, centre imprimé à plat,
+    # elle flotterait au-dessus du plateau (surplomb de 5 mm impossible à supporter proprement).
+    y_feuillure = POCHE_W / 2 - 2.0
+    for x0, sens in ((-COUPE_X, -1), (COUPE_X, 1)):
+        x_min = x0 if sens > 0 else x0 - prof
+        for languette in _joint(pied, x0, sens, lang, coque.LANGUETTE_PROF):
+            centre += languette
+        x_lang = x0 if sens > 0 else x0 - coque.LANGUETTE_PROF
+        centre += pied & placement() * Pos(x_lang, 0, Z_PLAQUE) * Box(
+            coque.LANGUETTE_PROF, 2 * (y_feuillure - coque.JEU_LANGUETTE), lang + 0.5,
+            align=(Align.MIN, Align.CENTER, Align.MIN),
+        )
+        for rainure in _joint(pied, x0, sens, coque.LANGUETTE_PEAU, prof):
+            if sens < 0:
+                gauche -= rainure
+            else:
+                droite -= rainure
+        feuillure = placement() * Pos(x_min, 0, Z_PLAQUE - 1) * Box(
+            prof, 2 * y_feuillure, coque.LANGUETTE_PEAU + 1.5, align=(Align.MIN, Align.CENTER, Align.MIN)
+        )
+        if sens < 0:
+            gauche -= feuillure
+        else:
+            droite -= feuillure
+    return gauche, centre, droite
 
 
 if __name__ == "__main__":
@@ -193,8 +232,8 @@ if __name__ == "__main__":
         "ecran": vers_coque * coque.ecran_en_place(),
     }
 
-    gauche, droite = build_parties()
-    parties = {"pied_gauche": gauche, "pied_droite": droite}
+    gauche, centre, droite = build_parties()
+    parties = {"pied_gauche": gauche, "pied_centre": centre, "pied_droite": droite}
     for nom, p in parties.items():
         print(f"  {nom} : valide={p.is_valid}, solides={len(p.solids())}")
         for c_nom, c in contexte.items():
@@ -209,10 +248,16 @@ if __name__ == "__main__":
     )
     print(f"  écart plot/écran : {min(p.distance_to(ecran) for p in parties.values()):.2f} mm")
 
+    # Plateau : centre à l'arrière, les 2 embouts côte à côte à l'avant
     profondeur = max(b.size.Y for b in base)
+    dy = (profondeur + ECART_PLATEAU) / 2
+    # Centre : sans flanc il basculerait debout → imprimé à plat, dos de la plaque sur le plateau
+    a_plat = placement().inverse()
+    bb_c = (a_plat * centre).bounding_box()
     disposition = {
-        "pied_gauche": Location((B_L / 4, (profondeur + ECART_PLATEAU) / 2, 0)),
-        "pied_droite": Location((-B_L / 4, -(profondeur + ECART_PLATEAU) / 2, 0)),
+        "pied_centre": Pos(-bb_c.center().X, dy + 20 - bb_c.center().Y, -bb_c.min.Z) * a_plat,
+        "pied_gauche": Location((COUPE_X - 20, -dy, 0)),
+        "pied_droite": Location((-COUPE_X + 20, -dy, 0)),
     }
     params = {k: v for k, v in globals().items() if k.isupper() and isinstance(v, (int, float))}
     export_all(parties, "support_xeneon", OUT_DIR, params, contexte=contexte, disposition=disposition)
