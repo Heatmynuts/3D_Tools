@@ -3,7 +3,8 @@
 Design (cohérent avec la coque, même langage de formes) :
 - Berceau : plaque inclinée sous toute la coque + rebord périphérique qui l'entoure, au même
   contour que la coque (mêmes rayons d'angle + jeu + épaisseur), dessus affleurant la face avant.
-- 2 flancs triangulaires aux extrémités, découpés au contour du berceau (aucun angle qui dépasse).
+- 2 flancs triangulaires aux extrémités, découpés au contour du berceau (aucun angle qui dépasse),
+  congé R20 au coin arrière-bas ; renfort central optionnel (AVEC_RENFORT) avec arche de passage de câble.
 - 4 plots aimantés aux points d'accroche d'origine (aimants de l'écran sous les vis d'angle,
   X ±179,0 ; Y ±52,7 sur le STEP officiel) : ils traversent les trous Ø12 de la coque.
 - Fenêtre dans la plaque face à la poche arrière de l'écran (X 27,1…114).
@@ -62,6 +63,11 @@ RECOUVREMENT_FLANC = 1.0   # pénétration du flanc dans la plaque (fusion)
 ASSISE = 2.0               # hauteur rabotée sous l'arête avant → semelle plate (adhérence, stabilité)
 CONGE_ARRIERE = 20.0       # congé du coin arrière-bas des flancs
 COUPE_X = 142.0            # coupes du pied à X = ±142 (loin de la jonction coque à X = 0)
+AVEC_RENFORT = 1           # 1 = renfort central, 0 = sans (le centre s'imprime alors à plat)
+RENFORT_LARGEUR = 10.0     # renfort central sous la jonction de la coque (X = 0)
+PASSAGE_LARGEUR = 30.0     # arche de passage de câble dans le renfort (posée sur le bureau)
+PASSAGE_HAUTEUR = 25.0     # sommet en ogive à 45° (sans support, wiki Bambu)
+MATIERE_MIN = 0.4          # demi-épaisseur minimale gardée dans languettes / rainures (0,8 mm = 2 lignes)
 
 JEU_PLOT = 0.2             # jeu plot / trou de coque (plage Bambu 0,15–0,3)
 ECART_ECRAN = 0.2          # le plot s'arrête à cette distance du dos de l'écran
@@ -137,32 +143,52 @@ def build_berceau():
     return b.part
 
 
-def build_flancs():
-    """Flancs triangulaires (repère bureau), découpés au contour du berceau."""
+def _face_flanc():
+    """Profil triangulaire (repère bureau, plan YZ) avec congé du coin arrière-bas."""
     y_av, z_av = vers_bureau(-B_W / 2, Z_PLAQUE + RECOUVREMENT_FLANC)
     y_ar, z_ar = vers_bureau(B_W / 2, Z_PLAQUE + RECOUVREMENT_FLANC)
     if z_av < 0:  # l'hypoténuse coupe le bureau : triangle posé à z = 0
         y0 = y_av + (0 - z_av) * (y_ar - y_av) / (z_ar - z_av)
         profil = [(y0, 0.0), (y_ar, z_ar), (y_ar, 0.0)]
     else:
+        y0 = y_av
         profil = [(y_av, 0.0), (y_av, z_av), (y_ar, z_ar), (y_ar, 0.0)]
     face = make_face(Polyline(*profil, close=True)).faces()[0]
     coin = [v for v in face.vertices() if abs(v.X - y_ar) < 1e-6 and abs(v.Y) < 1e-6]
-    face = face.fillet_2d(CONGE_ARRIERE, coin)      # congé généreux du coin arrière-bas
-    flancs = []
-    # Contour du berceau prolongé perpendiculairement à la plaque (repère écran), puis placé
+    return face.fillet_2d(CONGE_ARRIERE, coin), y0, y_ar
+
+
+def _prisme_flanc(x0: float, largeur: float, retrait: float = 0.0):
+    """Flanc de `largeur` depuis X = x0, découpé au contour du berceau (réduit de `retrait` en Y)."""
+    face, _, _ = _face_flanc()
     gabarit = placement() * (
-        Pos(0, 0, Z_PLAQUE - 300) * extrude(RectangleRounded(B_L, B_W, B_R), amount=300 + RECOUVREMENT_FLANC)
+        Pos(0, 0, Z_PLAQUE - 300)
+        * extrude(RectangleRounded(B_L, B_W - 2 * retrait, B_R - retrait), amount=300 + RECOUVREMENT_FLANC)
     )
-    for sx in (-1, 1):
-        x0 = sx * B_L / 2 - (FLANC_LARGEUR if sx > 0 else 0)
-        plan = Plane(origin=(x0, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0))
-        prisme = extrude(plan.from_local_coords(face), amount=FLANC_LARGEUR)
-        flanc = prisme & gabarit
-        if flanc.volume < 1:
-            raise ValueError("flanc vide : profil invalide (vérifier ANGLE / ASSISE)")
-        flancs.append(flanc)
-    return flancs
+    plan = Plane(origin=(x0, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0))
+    flanc = extrude(plan.from_local_coords(face), amount=largeur) & gabarit
+    if flanc.volume < 1:
+        raise ValueError("flanc vide : profil invalide (vérifier ANGLE / ASSISE)")
+    return flanc
+
+
+def build_flancs():
+    """Flancs triangulaires d'extrémité (repère bureau)."""
+    return [_prisme_flanc(-B_L / 2, FLANC_LARGEUR), _prisme_flanc(B_L / 2 - FLANC_LARGEUR, FLANC_LARGEUR)]
+
+
+def build_renfort():
+    """Renfort central (même profil que les flancs) avec arche de passage de câble au ras du bureau."""
+    # Retrait en Y : le renfort ne remplit pas l'arrondi des arêtes du berceau (sinon lamelle fine)
+    renfort = _prisme_flanc(-RENFORT_LARGEUR / 2, RENFORT_LARGEUR, retrait=coque.RAYON_ARETE + 0.5)
+    _, y0, y_ar = _face_flanc()
+    y_milieu = (y0 + y_ar - CONGE_ARRIERE) / 2
+    r = PASSAGE_LARGEUR / 2
+    long = RENFORT_LARGEUR + 2
+    # Arche : montants verticaux + toit à 45° (carré tourné) → sommet autoporteur
+    arche = Pos(0, y_milieu, 0) * Box(long, PASSAGE_LARGEUR, PASSAGE_HAUTEUR - r, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    arche += Pos(0, y_milieu, PASSAGE_HAUTEUR - r) * Rot(45, 0, 0) * Box(long, r * math.sqrt(2), r * math.sqrt(2))
+    return renfort - arche
 
 
 def _joint(piece, x0: float, sens: float, peau: float, longueur: float):
@@ -170,8 +196,10 @@ def _joint(piece, x0: float, sens: float, peau: float, longueur: float):
     solides = []
     for f in piece.intersect(Plane.YZ.offset(x0)).faces():
         for g in offset(f, amount=-peau).faces():
-            if g.area > 1:
-                solides.append(extrude(g, amount=longueur, dir=(sens, 0, 0)))
+            # Ouverture morphologique : supprime les lamelles < 2 × MATIERE_MIN (non imprimables)
+            for h in offset(offset(g, amount=-MATIERE_MIN), amount=MATIERE_MIN).faces():
+                if h.area > 1:
+                    solides.append(extrude(h, amount=longueur, dir=(sens, 0, 0)))
     return solides
 
 
@@ -179,11 +207,14 @@ def build_parties():
     """3 parties : embout gauche | centre | embout droit.
 
     Coupes à X = ±COUPE_X, décalées de la jonction de la coque (X = 0) : le centre du pied
-    ponte la jonction de la coque (joints en quinconce). Languettes sur le centre, rainures aux embouts.
+    ponte la jonction de la coque (joints en quinconce) ; il porte le renfort central.
+    Languettes sur le centre, rainures aux embouts.
     """
     pied = placement() * build_berceau()
     for f in build_flancs():
         pied += f
+    if AVEC_RENFORT:
+        pied += build_renfort()
     grand = 4 * B_L
     pied = pied & Box(grand, grand, grand, align=(Align.CENTER, Align.CENTER, Align.MIN))  # semelle z = 0
     gauche = pied & Pos(-COUPE_X, 0, 0) * Box(grand, grand, grand, align=(Align.MAX, Align.CENTER, Align.CENTER))
@@ -191,25 +222,27 @@ def build_parties():
     centre = pied & Box(2 * COUPE_X, grand, grand)
     lang = coque.LANGUETTE_PEAU + coque.JEU_LANGUETTE
     prof = coque.LANGUETTE_PROF + coque.PROFONDEUR_MARGE
-    # Languettes sur le centre (imprimé à plat : languettes plates, sans surplomb) ;
-    # rainures dans les embouts (imprimés debout : rainures inclinées à 45°, sans support).
-    # Dans la plaque, la languette descend jusqu'au dos (feuillure) : sinon, centre imprimé à plat,
-    # elle flotterait au-dessus du plateau (surplomb de 5 mm impossible à supporter proprement).
+    # Languettes sur le centre, rainures dans les embouts.
+    # Avec renfort : 3 parties debout (languettes / rainures à 45° ou verticales, sans support).
+    # Sans renfort : centre imprimé à plat → dans la plaque, la languette descend jusqu'au dos
+    # (feuillure), sinon elle flotterait au-dessus du plateau (surplomb de 5 mm).
     y_feuillure = POCHE_W / 2 - 2.0
     for x0, sens in ((-COUPE_X, -1), (COUPE_X, 1)):
-        x_min = x0 if sens > 0 else x0 - prof
         for languette in _joint(pied, x0, sens, lang, coque.LANGUETTE_PROF):
             centre += languette
-        x_lang = x0 if sens > 0 else x0 - coque.LANGUETTE_PROF
-        centre += pied & placement() * Pos(x_lang, 0, Z_PLAQUE) * Box(
-            coque.LANGUETTE_PROF, 2 * (y_feuillure - coque.JEU_LANGUETTE), lang + 0.5,
-            align=(Align.MIN, Align.CENTER, Align.MIN),
-        )
         for rainure in _joint(pied, x0, sens, coque.LANGUETTE_PEAU, prof):
             if sens < 0:
                 gauche -= rainure
             else:
                 droite -= rainure
+        if AVEC_RENFORT:
+            continue
+        x_lang = x0 if sens > 0 else x0 - coque.LANGUETTE_PROF
+        centre += pied & placement() * Pos(x_lang, 0, Z_PLAQUE) * Box(
+            coque.LANGUETTE_PROF, 2 * (y_feuillure - coque.JEU_LANGUETTE), lang + 0.5,
+            align=(Align.MIN, Align.CENTER, Align.MIN),
+        )
+        x_min = x0 if sens > 0 else x0 - prof
         feuillure = placement() * Pos(x_min, 0, Z_PLAQUE - 1) * Box(
             prof, 2 * y_feuillure, coque.LANGUETTE_PEAU + 1.5, align=(Align.MIN, Align.CENTER, Align.MIN)
         )
@@ -248,14 +281,17 @@ if __name__ == "__main__":
     )
     print(f"  écart plot/écran : {min(p.distance_to(ecran) for p in parties.values()):.2f} mm")
 
-    # Plateau : centre à l'arrière, les 2 embouts côte à côte à l'avant
+    # Plateau : les 3 parties debout ; centre à l'arrière, les 2 embouts à l'avant
     profondeur = max(b.size.Y for b in base)
     dy = (profondeur + ECART_PLATEAU) / 2
-    # Centre : sans flanc il basculerait debout → imprimé à plat, dos de la plaque sur le plateau
-    a_plat = placement().inverse()
-    bb_c = (a_plat * centre).bounding_box()
+    if AVEC_RENFORT:
+        pos_centre = Location((0, dy, 0))
+    else:  # sans renfort, le centre basculerait debout → à plat, dos de la plaque sur le plateau
+        a_plat = placement().inverse()
+        bb_c = (a_plat * centre).bounding_box()
+        pos_centre = Pos(-bb_c.center().X, dy + 20 - bb_c.center().Y, -bb_c.min.Z) * a_plat
     disposition = {
-        "pied_centre": Pos(-bb_c.center().X, dy + 20 - bb_c.center().Y, -bb_c.min.Z) * a_plat,
+        "pied_centre": pos_centre,
         "pied_gauche": Location((COUPE_X - 20, -dy, 0)),
         "pied_droite": Location((-COUPE_X + 20, -dy, 0)),
     }

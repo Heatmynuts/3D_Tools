@@ -16,7 +16,7 @@
         113.27,
         111.89
       ],
-      "volume_cm3": 115.61,
+      "volume_cm3": 116.22,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
     },
@@ -28,7 +28,7 @@
         113.27,
         111.89
       ],
-      "volume_cm3": 164.81,
+      "volume_cm3": 199.64,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
     },
@@ -40,7 +40,7 @@
         113.27,
         111.89
       ],
-      "volume_cm3": 115.61,
+      "volume_cm3": 116.22,
       "tient_dans_h2d": true,
       "couleur": "#4cb266"
     },
@@ -94,6 +94,11 @@
     "ASSISE": 2.0,
     "CONGE_ARRIERE": 20.0,
     "COUPE_X": 142.0,
+    "AVEC_RENFORT": 1,
+    "RENFORT_LARGEUR": 10.0,
+    "PASSAGE_LARGEUR": 30.0,
+    "PASSAGE_HAUTEUR": 25.0,
+    "MATIERE_MIN": 0.4,
     "JEU_PLOT": 0.2,
     "ECART_ECRAN": 0.2,
     "AIMANT_D": 8.0,
