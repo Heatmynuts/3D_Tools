@@ -12,6 +12,9 @@
 - Plugin `cad@text-to-cad` : déclaré dans `.claude/settings.json`, **chargé en local seulement**
   (les sessions cloud n'installent pas les plugins du repo).
 - Pilotage H2D (`bambu-printer-mcp`) : **local seulement**, voir `docs/local-h2d.md`.
+- Fusion 360 (MCP officiel Autodesk, serveur `fusion`) : **local seulement**, voir
+  `docs/local-fusion360.md` ; conception native Fusion → skill `fusion-design`.
+  Sans Fusion (cloud) : build123d.
 
 ## Structure d'une pièce
 ```

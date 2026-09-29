@@ -6,6 +6,7 @@ Atelier de conception 3D paramétrique (build123d) pour la **Bambu Lab H2D**, pi
 - Vue 3D interactive publiée en page privée (Artifact).
 - Règles de conception PLA / PETG sourcées : `.claude/skills/h2d-design/`.
 - Pilotage de l'imprimante en local : `docs/local-h2d.md`.
+- Conception dans Fusion 360 (MCP officiel Autodesk, en local) : `docs/local-fusion360.md`.
 
 | Dossier | Contenu |
 |---|---|
