@@ -1,0 +1,74 @@
+{
+  "nom": "assemblage_xeneon",
+  "volume_h2d_mm": [
+    325.0,
+    320.0,
+    320.0
+  ],
+  "reference": true,
+  "source": "Assemblage de contrôle (non imprimé). Écran : modèle officiel Corsair, CC-BY : https://www.printables.com/model/1651858",
+  "pieces": [
+    {
+      "nom": "coque_gauche",
+      "stl": "assemblage_xeneon_coque_gauche.stl",
+      "dimensions_mm": [
+        194.35,
+        110.41,
+        110.41
+      ],
+      "volume_cm3": 40.77,
+      "tient_dans_h2d": true,
+      "couleur": "#3373d9"
+    },
+    {
+      "nom": "coque_droite",
+      "stl": "assemblage_xeneon_coque_droite.stl",
+      "dimensions_mm": [
+        188.35,
+        110.41,
+        110.41
+      ],
+      "volume_cm3": 35.66,
+      "tient_dans_h2d": true,
+      "couleur": "#e68c26"
+    },
+    {
+      "nom": "pied_gauche",
+      "stl": "assemblage_xeneon_pied_gauche.stl",
+      "dimensions_mm": [
+        132.0,
+        102.57,
+        95.49
+      ],
+      "volume_cm3": 66.06,
+      "tient_dans_h2d": true,
+      "couleur": "#4cb266"
+    },
+    {
+      "nom": "pied_droite",
+      "stl": "assemblage_xeneon_pied_droite.stl",
+      "dimensions_mm": [
+        246.0,
+        102.57,
+        95.49
+      ],
+      "volume_cm3": 102.56,
+      "tient_dans_h2d": true,
+      "couleur": "#bf4c8c"
+    },
+    {
+      "nom": "ecran",
+      "stl": "assemblage_xeneon_ecran.stl",
+      "dimensions_mm": [
+        372.1,
+        96.76,
+        96.71
+      ],
+      "volume_cm3": 759.45,
+      "tient_dans_h2d": true,
+      "couleur": "#8c949e",
+      "contexte": true
+    }
+  ],
+  "parametres": {}
+}
