@@ -6,6 +6,7 @@
   qui porte 4 tenons en losange (faces à 45° → sans support, wiki Bambu « surplombs »).
 - Impression : face avant (côté écran) contre le plateau → plus belle finition côté visible ;
   seul le rebord arrière (caché) demande des supports (interface PLA, voir IMPRESSION.md).
+- 4 trous dans le rebord arrière aux vis d'angle (aimants d'origine) pour le pied aimanté.
 - Verre trempé : épaisseur et dimensions en paramètres (à renseigner avant impression).
 
 Cotes de l'écran relevées sur le STEP officiel Corsair (voir parts/xeneon_edge/SOURCE.md).
@@ -20,6 +21,7 @@ from build123d import (
     Box,
     BuildPart,
     BuildSketch,
+    Circle,
     Location,
     Locations,
     Mode,
@@ -48,6 +50,8 @@ DOS_PLAT_X = 174.7         # demi-étendue de la face arrière plane
 DOS_PLAT_Y = 48.4
 POCHE_X_MIN = 27.1         # zone arrière sans face plane (poche 11,6 mm de profondeur)
 POCHE_X_MAX = 114.0
+ACCROCHE_X = 179.0         # vis d'angle arrière (aimants de l'écran dessous) : X ±179,0 ; Y ±52,7
+ACCROCHE_Y = 52.7
 VITRE_X = 177.3            # zone vitrée (affichage) : X ±177,3 ; Y −53,1…+46,7
 VITRE_Y_MIN = -53.1
 VITRE_Y_MAX = 46.7
@@ -59,6 +63,8 @@ EPAISSEUR_DOS = 2.0
 EPAISSEUR_LEVRE = 2.0
 LEVRE_AVANT = 3.0          # recouvrement du cadre avant ; cadre le plus étroit = 5,2 mm
 RECOUVREMENT_DOS = 2.0     # le rebord arrière dépasse sous la face plane de cette valeur
+
+TROU_ACCROCHE_D = 12.0     # passage dans le rebord arrière pour les plots aimantés du pied
 
 EPAISSEUR_VERRE = 0.0      # verre trempé : À RENSEIGNER avant impression (0 = pas de verre)
 VERRE_L = 0.0              # longueur du verre (X) : À RENSEIGNER
@@ -117,6 +123,12 @@ def build_coque():
             # Poche arrière de l'écran laissée accessible (pas de face plane à cet endroit)
             with Locations((POCHE_X_MIN, 0)):
                 Rectangle(POCHE_X_MAX - POCHE_X_MIN, IN_W, align=(Align.MIN, Align.CENTER))
+        extrude(amount=EPAISSEUR_DOS, mode=Mode.SUBTRACT)
+
+        # Accès aux 4 points d'accroche aimantés d'origine (sous les vis d'angle)
+        with BuildSketch():
+            with Locations(*[(sx * ACCROCHE_X, sy * ACCROCHE_Y) for sx in (-1, 1) for sy in (-1, 1)]):
+                Circle(TROU_ACCROCHE_D / 2)
         extrude(amount=EPAISSEUR_DOS, mode=Mode.SUBTRACT)
     return coque.part
 

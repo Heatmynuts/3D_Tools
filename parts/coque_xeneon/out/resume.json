@@ -16,7 +16,7 @@
         132.1,
         24.05
       ],
-      "volume_cm3": 41.23,
+      "volume_cm3": 40.77,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
     },
@@ -28,7 +28,7 @@
         132.1,
         24.05
       ],
-      "volume_cm3": 36.11,
+      "volume_cm3": 35.66,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
     },
@@ -55,6 +55,8 @@
     "DOS_PLAT_Y": 48.4,
     "POCHE_X_MIN": 27.1,
     "POCHE_X_MAX": 114.0,
+    "ACCROCHE_X": 179.0,
+    "ACCROCHE_Y": 52.7,
     "VITRE_X": 177.3,
     "VITRE_Y_MIN": -53.1,
     "VITRE_Y_MAX": 46.7,
@@ -64,6 +66,7 @@
     "EPAISSEUR_LEVRE": 2.0,
     "LEVRE_AVANT": 3.0,
     "RECOUVREMENT_DOS": 2.0,
+    "TROU_ACCROCHE_D": 12.0,
     "EPAISSEUR_VERRE": 0.0,
     "VERRE_L": 0.0,
     "VERRE_W": 0.0,

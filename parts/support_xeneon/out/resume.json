@@ -1,0 +1,94 @@
+{
+  "nom": "support_xeneon",
+  "volume_h2d_mm": [
+    325.0,
+    320.0,
+    320.0
+  ],
+  "reference": false,
+  "source": null,
+  "pieces": [
+    {
+      "nom": "pied_gauche",
+      "stl": "support_xeneon_pied_gauche.stl",
+      "dimensions_mm": [
+        24.0,
+        101.15,
+        94.08
+      ],
+      "volume_cm3": 113.34,
+      "tient_dans_h2d": true,
+      "couleur": "#3373d9"
+    },
+    {
+      "nom": "pied_droit",
+      "stl": "support_xeneon_pied_droit.stl",
+      "dimensions_mm": [
+        24.0,
+        101.15,
+        94.08
+      ],
+      "volume_cm3": 113.34,
+      "tient_dans_h2d": true,
+      "couleur": "#e68c26"
+    },
+    {
+      "nom": "coque_gauche",
+      "stl": "support_xeneon_coque_gauche.stl",
+      "dimensions_mm": [
+        194.35,
+        110.41,
+        110.41
+      ],
+      "volume_cm3": 40.77,
+      "tient_dans_h2d": true,
+      "couleur": "#8c949e",
+      "contexte": true
+    },
+    {
+      "nom": "coque_droite",
+      "stl": "support_xeneon_coque_droite.stl",
+      "dimensions_mm": [
+        188.35,
+        110.41,
+        110.41
+      ],
+      "volume_cm3": 35.66,
+      "tient_dans_h2d": true,
+      "couleur": "#8c949e",
+      "contexte": true
+    },
+    {
+      "nom": "ecran",
+      "stl": "support_xeneon_ecran.stl",
+      "dimensions_mm": [
+        372.1,
+        96.76,
+        96.71
+      ],
+      "volume_cm3": 759.45,
+      "tient_dans_h2d": true,
+      "couleur": "#8c949e",
+      "contexte": true
+    }
+  ],
+  "parametres": {
+    "ANGLE": 45.0,
+    "PIED_LARGEUR": 24.0,
+    "EPAISSEUR_PLAQUE": 4.0,
+    "REBORD_HAUTEUR": 8.0,
+    "REBORD_EPAISSEUR": 4.0,
+    "JEU_PIED": 0.5,
+    "MARGE_HAUT": 4.0,
+    "JEU_PLOT": 0.2,
+    "ECART_ECRAN": 0.2,
+    "AIMANT_D": 8.0,
+    "AIMANT_H": 3.0,
+    "JEU_AIMANT": 0.1,
+    "ECART_PLATEAU": 15.0,
+    "PLOT_D": 11.6,
+    "Y_BAS": -62.55,
+    "Y_HAUT": 62.5,
+    "Z_DOS": -2.0
+  }
+}
