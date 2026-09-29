@@ -1,5 +1,5 @@
 {
-  "nom": "coque_xeneon",
+  "nom": "coque_xeneon_plateau",
   "volume_h2d_mm": [
     325.0,
     320.0,
@@ -10,7 +10,7 @@
   "pieces": [
     {
       "nom": "coque_gauche",
-      "stl": "coque_xeneon_coque_gauche.stl",
+      "stl": "coque_xeneon_plateau_coque_gauche.stl",
       "dimensions_mm": [
         194.35,
         132.1,
@@ -22,7 +22,7 @@
     },
     {
       "nom": "coque_droite",
-      "stl": "coque_xeneon_coque_droite.stl",
+      "stl": "coque_xeneon_plateau_coque_droite.stl",
       "dimensions_mm": [
         188.35,
         132.1,
@@ -31,19 +31,6 @@
       "volume_cm3": 36.11,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
-    },
-    {
-      "nom": "ecran",
-      "stl": "coque_xeneon_ecran.stl",
-      "dimensions_mm": [
-        372.1,
-        119.5,
-        19.75
-      ],
-      "volume_cm3": 759.45,
-      "tient_dans_h2d": true,
-      "couleur": "#8c949e",
-      "contexte": true
     }
   ],
   "parametres": {
