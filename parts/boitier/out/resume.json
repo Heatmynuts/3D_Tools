@@ -1,0 +1,48 @@
+{
+  "nom": "boitier",
+  "volume_h2d_mm": [
+    325.0,
+    320.0,
+    320.0
+  ],
+  "pieces": [
+    {
+      "nom": "boitier",
+      "stl": "boitier_boitier.stl",
+      "dimensions_mm": [
+        80.0,
+        60.0,
+        40.0
+      ],
+      "volume_cm3": 29.98,
+      "tient_dans_h2d": true,
+      "couleur": "#3373d9"
+    },
+    {
+      "nom": "couvercle",
+      "stl": "boitier_couvercle.stl",
+      "dimensions_mm": [
+        80.0,
+        60.0,
+        6.0
+      ],
+      "volume_cm3": 11.2,
+      "tient_dans_h2d": true,
+      "couleur": "#e68c26"
+    }
+  ],
+  "parametres": {
+    "LONGUEUR": 80.0,
+    "LARGEUR": 60.0,
+    "HAUTEUR": 40.0,
+    "EPAISSEUR_PAROI": 2.0,
+    "EPAISSEUR_FOND": 2.0,
+    "RAYON_ANGLES": 4.0,
+    "CONGE_INTERIEUR": 1.5,
+    "EPAISSEUR_COUVERCLE": 2.0,
+    "HAUTEUR_LEVRE": 4.0,
+    "EPAISSEUR_LEVRE": 1.6,
+    "JEU": 0.2,
+    "ECART_PLATEAU": 10.0
+  }
+}
