@@ -10,7 +10,7 @@ Usage depuis un part.py :
 import json
 from pathlib import Path
 
-from build123d import Compound, Mesher, Part, export_gltf, export_step, export_stl
+from build123d import Compound, Location, Mesher, Part, export_gltf, export_step, export_stl
 
 # Volume retenu pour la H2D (mm), compatible buse gauche et droite.
 # Source : .claude/skills/h2d-design/references/h2d.md
@@ -51,12 +51,18 @@ def export_all(
     params: dict | None = None,
     reference: bool = False,
     source: str | None = None,
+    contexte: dict[str, Part] | None = None,
+    disposition: dict[str, Location] | None = None,
 ) -> None:
     """Exporte chaque pièce en STEP/STL, l'ensemble en 3MF et GLB, et affiche les contrôles.
 
     reference : modèle importé servant de gabarit (ne s'imprime pas) : ni STEP ni 3MF
                 exportés (le STEP d'origine est conservé), maillage allégé.
     source : attribution affichée dans la vue 3D (auteur, licence, lien).
+    contexte : pièces affichées en transparence dans la vue 3D uniquement (ex. l'objet à protéger),
+               sans STEP, 3MF ni contrôle de volume.
+    disposition : déplacement de chaque pièce pour le plateau, appliqué au 3MF seulement
+                  (la vue 3D et les STEP/STL restent en position assemblée).
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     tol, ang = MESH_REFERENCE if reference else MESH_PIECE
@@ -92,12 +98,30 @@ def export_all(
             }
         )
 
+    for label, shape in (contexte or {}).items():
+        shape.label = label
+        shape.color = (0.55, 0.58, 0.62)
+        export_stl(shape, out_dir / f"{name}_{label}.stl", *MESH_REFERENCE)
+        bb = shape.bounding_box()
+        resume["pieces"].append(
+            {
+                "nom": label,
+                "stl": f"{name}_{label}.stl",
+                "dimensions_mm": [round(v, 2) for v in (bb.size.X, bb.size.Y, bb.size.Z)],
+                "volume_cm3": round(shape.volume / 1000, 2),
+                "tient_dans_h2d": True,
+                "couleur": "#8c949e",
+                "contexte": True,
+            }
+        )
+
     assembly = Compound(label=name, children=list(parts.values()))
 
     if not reference:
         mesher = Mesher()
-        for shape in parts.values():
-            mesher.add_shape(shape)
+        for label, shape in parts.items():
+            loc = (disposition or {}).get(label)
+            mesher.add_shape(loc * shape if loc else shape)
         mesher.write(str(out_dir / f"{name}.3mf"))
 
     export_gltf(

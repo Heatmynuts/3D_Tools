@@ -195,7 +195,7 @@ const fmt = (v, d = 2) => Number(v).toLocaleString("fr-FR", { minimumFractionDig
 const $ = (id) => document.getElementById(id);
 
 // ---- Fiche technique
-const allFit = data.pieces.every((p) => p.tient_dans_h2d);
+const allFit = data.pieces.every((p) => p.contexte || p.tient_dans_h2d);
 const [vx, vy, vz] = data.volume_h2d_mm;
 if (data.reference) {
   $("fit").className = "fit ref";
@@ -224,7 +224,7 @@ for (const p of data.pieces) {
   li.innerHTML = `<span class="swatch" style="background:${p.couleur}"></span>
     <span class="part-name"></span>
     <span class="part-dims"><strong>${fmt(x)}</strong> × <strong>${fmt(y)}</strong> × <strong>${fmt(z)}</strong> mm</span>
-    <span class="part-vol">${fmt(p.volume_cm3)} cm³${p.tient_dans_h2d || data.reference ? "" : " · hors volume H2D"}</span>`;
+    <span class="part-vol">${p.contexte ? "contexte, non imprimé" : fmt(p.volume_cm3) + " cm³"}${p.tient_dans_h2d || data.reference ? "" : " · hors volume H2D"}</span>`;
   li.querySelector(".part-name").textContent = p.nom;
   $("parts").append(li);
 }
@@ -266,7 +266,8 @@ const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer;
 for (const p of data.pieces) {
   let geo = loader.parse(b64(data.stl[p.stl]));
   geo = toCreasedNormals(geo, THREE.MathUtils.degToRad(30));
-  const mat = new THREE.MeshStandardMaterial({ color: p.couleur, roughness: 0.62, metalness: 0 });
+  const mat = new THREE.MeshStandardMaterial({ color: p.couleur, roughness: 0.62, metalness: 0,
+    transparent: !!p.contexte, opacity: p.contexte ? 0.35 : 1, depthWrite: !p.contexte });
   models.add(new THREE.Mesh(geo, mat));
   const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.55 }));
   edges.add(line);

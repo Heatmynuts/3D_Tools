@@ -1,0 +1,81 @@
+{
+  "nom": "coque_xeneon",
+  "volume_h2d_mm": [
+    325.0,
+    320.0,
+    320.0
+  ],
+  "reference": false,
+  "source": null,
+  "pieces": [
+    {
+      "nom": "coque_gauche",
+      "stl": "coque_xeneon_coque_gauche.stl",
+      "dimensions_mm": [
+        194.35,
+        132.1,
+        24.05
+      ],
+      "volume_cm3": 41.23,
+      "tient_dans_h2d": true,
+      "couleur": "#3373d9"
+    },
+    {
+      "nom": "coque_droite",
+      "stl": "coque_xeneon_coque_droite.stl",
+      "dimensions_mm": [
+        188.35,
+        132.1,
+        24.05
+      ],
+      "volume_cm3": 36.11,
+      "tient_dans_h2d": true,
+      "couleur": "#e68c26"
+    },
+    {
+      "nom": "ecran",
+      "stl": "coque_xeneon_ecran.stl",
+      "dimensions_mm": [
+        372.1,
+        119.5,
+        19.75
+      ],
+      "volume_cm3": 759.45,
+      "tient_dans_h2d": true,
+      "couleur": "#8c949e",
+      "contexte": true
+    }
+  ],
+  "parametres": {
+    "ECRAN_L": 372.1,
+    "ECRAN_W": 119.5,
+    "ECRAN_H": 19.75,
+    "ECRAN_RAYON": 7.0,
+    "DOS_PLAT_X": 174.7,
+    "DOS_PLAT_Y": 48.4,
+    "POCHE_X_MIN": 27.1,
+    "POCHE_X_MAX": 114.0,
+    "JEU_ECRAN": 0.3,
+    "EPAISSEUR_PAROI": 2.0,
+    "EPAISSEUR_DOS": 2.0,
+    "EPAISSEUR_LEVRE": 2.0,
+    "LEVRE_AVANT": 3.0,
+    "RECOUVREMENT_DOS": 2.0,
+    "BANDE_LARGEUR": 20.0,
+    "BANDE_SURPLUS": 4.0,
+    "TENON_COTE": 2.5,
+    "TENON_LONG": 6.0,
+    "JEU_TENON": 0.2,
+    "PROFONDEUR_MARGE": 0.5,
+    "ECART_PLATEAU": 10.0,
+    "IN_L": 372.70000000000005,
+    "IN_W": 120.1,
+    "IN_R": 7.3,
+    "OUT_L": 376.70000000000005,
+    "OUT_W": 124.1,
+    "Z_CAVITE": 2.0,
+    "H_CAVITE": 20.05,
+    "H_TOTAL": 24.05,
+    "TENON_Y": 63.05
+  }
+}
