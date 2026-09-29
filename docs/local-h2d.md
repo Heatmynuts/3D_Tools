@@ -18,6 +18,7 @@ Sources : [bambu-printer-mcp README](https://github.com/DMontgomery40/bambu-prin
 | Node.js 24 | bambu-printer-mcp | version testée par l'auteur |
 | Bambu Studio | tranchage (slicing) | déjà installé normalement |
 | ffmpeg | photo caméra H2D (optionnel) | macOS : `brew install ffmpeg` |
+| Playwright + Chromium | rendus PNG (`tools/render.py`) | `npm install -g playwright` puis `npx playwright install chromium` |
 
 ## 2. Cloner le projet
 ```bash

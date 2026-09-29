@@ -67,6 +67,11 @@
   }
   .toolbar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
   .toolbar .sep { width: 8px; }
+  .toolbar input[type="color"] {
+    pointer-events: auto;
+    width: 38px; height: 34px; padding: 2px;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--panel); cursor: pointer;
+  }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .status {
@@ -146,9 +151,13 @@
       <button type="button" id="v-top" data-view="top">Dessus</button>
       <button type="button" id="v-front" data-view="front">Face</button>
       <button type="button" id="v-side" data-view="side">Côté</button>
+      <button type="button" id="v-rear" data-view="rear">Arrière</button>
       <span class="sep" aria-hidden="true"></span>
       <button type="button" id="t-edges" aria-pressed="true">Arêtes</button>
       <button type="button" id="t-plate" aria-pressed="true">Plateau H2D</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button type="button" id="t-rendu" aria-pressed="false">Rendu</button>
+      <input type="color" id="c-rendu" value="#1c1d1f" aria-label="Couleur du filament" hidden>
     </div>
   </div>
 
@@ -189,6 +198,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const data = JSON.parse(document.getElementById("donnees").textContent);
 const fmt = (v, d = 2) => Number(v).toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -248,7 +258,8 @@ camera.up.set(0, 0, 1);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x8894a0, 1.6));
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8894a0, 1.6);
+scene.add(hemi);
 const key = new THREE.DirectionalLight(0xffffff, 1.6);
 key.position.set(1, -1.4, 2);
 scene.add(key);
@@ -263,12 +274,21 @@ scene.add(models, edges);
 
 const loader = new STLLoader();
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer;
+// Mode Rendu : une seule matière pour les pièces imprimées (PETG mat), verre noir pour le contexte
+const matFilament = new THREE.MeshPhysicalMaterial({ color: data.couleur_rendu || "#1c1d1f", roughness: 0.6,
+  metalness: 0, clearcoat: 0.15, clearcoatRoughness: 0.5 });
+const matContexte = new THREE.MeshPhysicalMaterial({ color: 0x0b0c0e, roughness: 0.12, metalness: 0,
+  clearcoat: 1, clearcoatRoughness: 0.05 });
 for (const p of data.pieces) {
   let geo = loader.parse(b64(data.stl[p.stl]));
   geo = toCreasedNormals(geo, THREE.MathUtils.degToRad(30));
   const mat = new THREE.MeshStandardMaterial({ color: p.couleur, roughness: 0.62, metalness: 0,
     transparent: !!p.contexte, opacity: p.contexte ? 0.35 : 1, depthWrite: !p.contexte });
-  models.add(new THREE.Mesh(geo, mat));
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.userData = { debug: mat, rendu: p.contexte ? matContexte : matFilament };
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  models.add(mesh);
   const line = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.55 }));
   edges.add(line);
 }
@@ -307,12 +327,13 @@ const dirs = {
   top: new THREE.Vector3(0, -0.0001, 1),
   front: new THREE.Vector3(0, -1, 0.0001),
   side: new THREE.Vector3(1, 0, 0.0001),
+  rear: new THREE.Vector3(-1, 1.25, 0.9),
 };
-function setView(name) {
+function setView(name, marge = 1.08) {
   const d = dirs[name].clone().normalize();
   const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
   const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect);
-  const dist = radius / Math.sin(Math.min(vHalf, hHalf)) * 1.08;
+  const dist = radius / Math.sin(Math.min(vHalf, hHalf)) * marge;
   controls.target.copy(center);
   camera.position.copy(center).addScaledVector(d, dist);
   camera.near = dist / 100;
@@ -330,6 +351,53 @@ function toggle(btn, obj) {
 toggle($("t-edges"), edges);
 toggle($("t-plate"), plate);
 
+// ---- Mode Rendu : éclairage studio, ombres douces, matière unique
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envTex = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const sol = new THREE.Mesh(new THREE.PlaneGeometry(radius * 12, radius * 12), new THREE.ShadowMaterial({ opacity: 0.22 }));
+sol.position.set(center.x, center.y, box.min.z - 0.01);
+sol.receiveShadow = true;
+sol.visible = false;
+scene.add(sol);
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.radius = 6;
+const ombre = key.shadow.camera;
+ombre.left = ombre.bottom = -radius * 1.6;
+ombre.right = ombre.top = radius * 1.6;
+ombre.near = 1;
+ombre.far = radius * 8;
+key.target.position.copy(center);
+scene.add(key.target);
+
+let modeRendu = false;
+function setRendu(on) {
+  modeRendu = on;
+  for (const m of models.children) m.material = on ? m.userData.rendu : m.userData.debug;
+  edges.visible = !on;
+  plate.visible = !on;
+  sol.visible = on;
+  scene.environment = on ? envTex : null;
+  renderer.toneMapping = on ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+  hemi.intensity = on ? 0.35 : 1.6;
+  key.intensity = on ? 2.2 : 1.6;
+  rim.intensity = on ? 0.4 : 0.6;
+  key.position.copy(center).add(new THREE.Vector3(radius * 1.2, -radius * 1.6, radius * 2.6));
+  key.castShadow = on;
+  $("t-rendu").setAttribute("aria-pressed", String(on));
+  $("t-edges").setAttribute("aria-pressed", String(edges.visible));
+  $("t-plate").setAttribute("aria-pressed", String(plate.visible));
+  $("c-rendu").hidden = !on;
+}
+function setCouleur(hex) {
+  matFilament.color.set(hex);
+  $("c-rendu").value = hex;
+}
+$("t-rendu").addEventListener("click", () => setRendu(!modeRendu));
+$("c-rendu").addEventListener("input", (e) => setCouleur(e.target.value));
+if (data.couleur_rendu) $("c-rendu").value = data.couleur_rendu;
+
 function resize() {
   const r = canvas.parentElement.getBoundingClientRect();
   renderer.setSize(r.width, r.height, false);
@@ -342,4 +410,7 @@ setView("iso");
 
 $("status").textContent = `Ensemble ${fmt(size.x, 1)} × ${fmt(size.y, 1)} × ${fmt(size.z, 1)} mm · glisser pour tourner, pincer pour zoomer`;
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+
+// Crochet d'automatisation (tools/render.py)
+window.vue3d = { vue: setView, rendu: setRendu, couleur: setCouleur, pret: true };
 </script>

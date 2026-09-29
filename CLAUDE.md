@@ -20,6 +20,7 @@ parts/<nom>/out/        # .step .stl .3mf .glb resume.json + vue 3D .html (gén�
 parts/<nom>/vue3d.url   # lien de l'Artifact de la vue 3D
 tools/export.py         # export multi-format + contrôles (volume H2D, dimensions)
 tools/make_view.py      # STL + resume.json -> page HTML 3D autonome (à publier en Artifact)
+tools/render.py         # rendus PNG réalistes multi-angles -> parts/<nom>/rendus/
 viewer/template.html    # gabarit de la vue 3D (three.js)
 ```
 
@@ -33,8 +34,9 @@ viewer/template.html    # gabarit de la vue 3D (three.js)
 6. Vue 3D : `python3 tools/make_view.py parts/<nom> --titre "Nom"` puis publier
    `parts/<nom>/out/<nom>_vue3d.html` en Artifact. Le lien est noté dans `parts/<nom>/vue3d.url` :
    s'il existe, republier avec ce `url` (même lien) ; sinon créer puis écrire le lien dans ce fichier.
-7. Livrer : lien de la vue 3D + résumé (dimensions, matière conseillée, orientation, supports)
-   + chemin du `.3mf`/`.step` pour Bambu Studio.
+7. Livrer : lien de la vue 3D + rendus PNG (`python3 tools/render.py parts/<nom> [--couleur "#hex"]`,
+   relus avant envoi) + résumé (dimensions, matière conseillée, orientation, supports)
+   + chemin du `.3mf`/`.step` pour Bambu Studio. La vue 3D a un bouton « Rendu » (aspect réaliste).
 8. Commit + push sur la branche de travail.
 9. Impression (local uniquement) : vérifier l'état de la H2D et l'AMS, résumer
    (fichier, matière, buse, plateau) et **demander confirmation avant tout envoi**.
