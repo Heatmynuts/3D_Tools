@@ -16,6 +16,11 @@ from build123d import Compound, Mesher, Part, export_gltf, export_step, export_s
 # Source : .claude/skills/h2d-design/references/h2d.md
 H2D_VOLUME = (325.0, 320.0, 320.0)
 
+# Finesse du maillage (STL/GLB) : (tolérance linéaire mm, tolérance angulaire rad).
+# Pièce à imprimer : valeurs par défaut de build123d. Référence : plus grossier, pour la vue 3D.
+MESH_PIECE = (0.001, 0.1)
+MESH_REFERENCE = (0.05, 0.3)
+
 # Couleurs d'affichage (vue 3D uniquement, sans lien avec le filament).
 COLORS = [(0.20, 0.45, 0.85), (0.90, 0.55, 0.15), (0.30, 0.70, 0.40), (0.75, 0.30, 0.55)]
 
@@ -40,23 +45,42 @@ def _fits(size: tuple[float, float, float]) -> bool:
 
 
 def export_all(
-    parts: dict[str, Part], name: str, out_dir: Path, params: dict | None = None
+    parts: dict[str, Part],
+    name: str,
+    out_dir: Path,
+    params: dict | None = None,
+    reference: bool = False,
+    source: str | None = None,
 ) -> None:
-    """Exporte chaque pièce en STEP/STL, l'ensemble en 3MF et GLB, et affiche les contrôles."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Pièce « {name} »")
+    """Exporte chaque pièce en STEP/STL, l'ensemble en 3MF et GLB, et affiche les contrôles.
 
-    resume = {"nom": name, "volume_h2d_mm": H2D_VOLUME, "pieces": [], "parametres": params or {}}
+    reference : modèle importé servant de gabarit (ne s'imprime pas) : ni STEP ni 3MF
+                exportés (le STEP d'origine est conservé), maillage allégé.
+    source : attribution affichée dans la vue 3D (auteur, licence, lien).
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    tol, ang = MESH_REFERENCE if reference else MESH_PIECE
+    print(f"Pièce « {name} »{' (référence)' if reference else ''}")
+
+    resume = {
+        "nom": name,
+        "volume_h2d_mm": H2D_VOLUME,
+        "reference": reference,
+        "source": source,
+        "pieces": [],
+        "parametres": params or {},
+    }
     for i, (label, shape) in enumerate(parts.items()):
         color = COLORS[i % len(COLORS)]
         shape.label = label
         shape.color = color
         size = _report(label, shape)
         fits = _fits(size)
-        if not fits:
+        if not fits and not reference:
             print(f"    ⚠ {label} dépasse le volume H2D {H2D_VOLUME} mm")
-        export_step(shape, out_dir / f"{name}_{label}.step")
-        export_stl(shape, out_dir / f"{name}_{label}.stl")
+        if not reference:
+            export_step(shape, out_dir / f"{name}_{label}.step")
+        export_stl(shape, out_dir / f"{name}_{label}.stl", tolerance=tol, angular_tolerance=ang)
         resume["pieces"].append(
             {
                 "nom": label,
@@ -70,11 +94,18 @@ def export_all(
 
     assembly = Compound(label=name, children=list(parts.values()))
 
-    mesher = Mesher()
-    for shape in parts.values():
-        mesher.add_shape(shape)
-    mesher.write(str(out_dir / f"{name}.3mf"))
+    if not reference:
+        mesher = Mesher()
+        for shape in parts.values():
+            mesher.add_shape(shape)
+        mesher.write(str(out_dir / f"{name}.3mf"))
 
-    export_gltf(assembly, str(out_dir / f"{name}.glb"), binary=True)
+    export_gltf(
+        assembly,
+        str(out_dir / f"{name}.glb"),
+        binary=True,
+        linear_deflection=tol,
+        angular_deflection=ang,
+    )
     (out_dir / "resume.json").write_text(json.dumps(resume, ensure_ascii=False, indent=2))
     print(f"  → fichiers dans {out_dir}")

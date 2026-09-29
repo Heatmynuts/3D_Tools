@@ -1,0 +1,25 @@
+{
+  "nom": "xeneon_edge",
+  "volume_h2d_mm": [
+    325.0,
+    320.0,
+    320.0
+  ],
+  "reference": true,
+  "source": "Modèle officiel « CORSAIR Xeneon EDGE 14.5 touchscreen model » par Corsair, licence CC-BY : https://www.printables.com/model/1651858",
+  "pieces": [
+    {
+      "nom": "ecran",
+      "stl": "xeneon_edge_ecran.stl",
+      "dimensions_mm": [
+        372.1,
+        119.5,
+        19.75
+      ],
+      "volume_cm3": 759.45,
+      "tient_dans_h2d": false,
+      "couleur": "#3373d9"
+    }
+  ],
+  "parametres": {}
+}

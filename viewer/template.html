@@ -111,6 +111,9 @@
   }
   .fit.ok { color: var(--ok); }
   .fit.warn { color: var(--warn); }
+  .fit.ref { color: var(--muted); }
+  .source { margin: 0; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+  .source a { color: var(--accent); }
 
   .parts { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
   .part { display: grid; grid-template-columns: 12px minmax(0, 1fr); column-gap: 10px; row-gap: 2px; }
@@ -161,10 +164,15 @@
       <ul class="parts" id="parts"></ul>
     </section>
 
-    <section>
+    <section id="params-section">
       <h2>Paramètres (mm)</h2>
       <table><tbody id="params"></tbody></table>
       <p class="hint">Pour modifier : demander à Claude, par ex. « passe JEU à 0,3 ».</p>
+    </section>
+
+    <section id="source-section" hidden>
+      <h2>Source</h2>
+      <p class="source" id="source"></p>
     </section>
   </aside>
 </div>
@@ -189,8 +197,25 @@ const $ = (id) => document.getElementById(id);
 // ---- Fiche technique
 const allFit = data.pieces.every((p) => p.tient_dans_h2d);
 const [vx, vy, vz] = data.volume_h2d_mm;
-$("fit").className = "fit " + (allFit ? "ok" : "warn");
-$("fit").textContent = (allFit ? "Tient dans " : "Dépasse ") + `${vx} × ${vy} × ${vz} mm`;
+if (data.reference) {
+  $("fit").className = "fit ref";
+  $("fit").textContent = "Modèle de référence · non imprimé";
+} else {
+  $("fit").className = "fit " + (allFit ? "ok" : "warn");
+  $("fit").textContent = (allFit ? "Tient dans " : "Dépasse ") + `${vx} × ${vy} × ${vz} mm`;
+}
+if (data.source) {
+  $("source-section").hidden = false;
+  const src = $("source");
+  for (const part of data.source.split(/(https:\/\/\S+)/)) {
+    if (/^https:\/\//.test(part)) {
+      const a = document.createElement("a");
+      a.href = part; a.textContent = part; a.target = "_blank"; a.rel = "noopener";
+      src.append(a);
+    } else src.append(part);
+  }
+}
+if (!Object.keys(data.parametres).length) $("params-section").hidden = true;
 
 for (const p of data.pieces) {
   const li = document.createElement("li");
@@ -199,7 +224,7 @@ for (const p of data.pieces) {
   li.innerHTML = `<span class="swatch" style="background:${p.couleur}"></span>
     <span class="part-name"></span>
     <span class="part-dims"><strong>${fmt(x)}</strong> × <strong>${fmt(y)}</strong> × <strong>${fmt(z)}</strong> mm</span>
-    <span class="part-vol">${fmt(p.volume_cm3)} cm³${p.tient_dans_h2d ? "" : " · hors volume H2D"}</span>`;
+    <span class="part-vol">${fmt(p.volume_cm3)} cm³${p.tient_dans_h2d || data.reference ? "" : " · hors volume H2D"}</span>`;
   li.querySelector(".part-name").textContent = p.nom;
   $("parts").append(li);
 }

@@ -39,6 +39,16 @@ viewer/template.html    # gabarit de la vue 3D (three.js)
 9. Impression (local uniquement) : vérifier l'état de la H2D et l'AMS, résumer
    (fichier, matière, buse, plateau) et **demander confirmation avant tout envoi**.
 
+## Modèles importés (gabarits)
+- Chercher d'abord un modèle **officiel du fabricant** (STEP de préférence). Noter auteur,
+  licence, lien et date dans `parts/<nom>/SOURCE.md` ; conserver le fichier d'origine dans
+  `parts/<nom>/source/` sans le modifier.
+- `part.py` importe le STEP et appelle `export_all(..., reference=True, source=ATTRIBUTION)` :
+  maillage allégé, pas de STEP ni de 3MF exportés, attribution affichée dans la vue 3D.
+- Printables bloque les robots sur le site web ; son API publique `https://api.printables.com/graphql/`
+  permet de lister les fichiers d'un modèle et d'obtenir le lien de téléchargement.
+- Exemple : `parts/xeneon_edge/`.
+
 ## Règles CAO
 - Unités : mm. Origine : centre de la face posée sur le plateau (Z=0 = plateau).
 - Orienter la pièce dans `part.py` dans sa position d'impression.
