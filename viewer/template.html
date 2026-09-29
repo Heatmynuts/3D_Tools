@@ -189,8 +189,8 @@
 <script type="application/json" id="donnees">/*__DONNEES__*/</script>
 <script type="importmap">
 { "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
 } }
 </script>
 <script type="module">
@@ -274,18 +274,59 @@ scene.add(models, edges);
 
 const loader = new STLLoader();
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer;
-// Mode Rendu : une seule matière pour les pièces imprimées (PETG mat), verre noir pour le contexte
-const matFilament = new THREE.MeshPhysicalMaterial({ color: data.couleur_rendu || "#1c1d1f", roughness: 0.6,
-  metalness: 0, clearcoat: 0.15, clearcoatRoughness: 0.5 });
-const matContexte = new THREE.MeshPhysicalMaterial({ color: 0x0b0c0e, roughness: 0.12, metalness: 0,
+// Mode Rendu : filament (PETG mat) avec stries de couches, verre noir pour l'écran
+const HAUTEUR_COUCHE = 0.2;   // mm : stries du rendu (hauteur de couche courante, illustrative)
+// Carte de normales des stries : profil sinusoïdal le long de V (1 période = 1 couche), mipmappée
+// → les stries s'estompent d'elles-mêmes quand elles deviennent plus fines qu'un pixel.
+const striesTex = (() => {
+  const n = 32, d = new Uint8Array(n * n * 4);
+  for (let j = 0; j < n; j++) {
+    const pente = 0.55 * Math.cos((2 * Math.PI * (j + 0.5)) / n);
+    const l = Math.hypot(pente, 1);
+    for (let i = 0; i < n; i++) {
+      const k = (j * n + i) * 4;
+      d[k] = 128; d[k + 1] = Math.round((pente / l * 0.5 + 0.5) * 255); d[k + 2] = Math.round((1 / l * 0.5 + 0.5) * 255); d[k + 3] = 255;
+    }
+  }
+  const t = new THREE.DataTexture(d, n, n);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.magFilter = THREE.LinearFilter;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = true;
+  t.anisotropy = 8;
+  t.needsUpdate = true;
+  return t;
+})();
+const matsFilament = [];
+const nouveauFilament = () => {
+  const m = new THREE.MeshPhysicalMaterial({ color: data.couleur_rendu || "#1c1d1f", roughness: 0.6,
+    metalness: 0, clearcoat: 0.15, clearcoatRoughness: 0.5, normalMap: striesTex, normalScale: new THREE.Vector2(0.6, 0.6) });
+  matsFilament.push(m);
+  return m;
+};
+const matVerre = new THREE.MeshPhysicalMaterial({ color: 0x0b0c0e, roughness: 0.12, metalness: 0,
   clearcoat: 1, clearcoatRoughness: 0.05 });
+// UV des stries : V = position le long de la direction d'empilement / hauteur de couche
+function uvCouches(geo, n) {
+  const N = new THREE.Vector3(...n).normalize();
+  const T = Math.abs(N.z) < 0.9 ? new THREE.Vector3(0, 0, 1).cross(N).normalize() : new THREE.Vector3(1, 0, 0).cross(N).normalize();
+  const pos = geo.attributes.position, uv = new Float32Array(pos.count * 2), v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    uv[2 * i] = v.dot(T) / HAUTEUR_COUCHE;
+    uv[2 * i + 1] = v.dot(N) / HAUTEUR_COUCHE;
+  }
+  geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+}
 for (const p of data.pieces) {
   let geo = loader.parse(b64(data.stl[p.stl]));
   geo = toCreasedNormals(geo, THREE.MathUtils.degToRad(30));
+  const verre = (p.matiere || (p.contexte ? "verre" : "filament")) === "verre";
+  if (!verre) uvCouches(geo, p.normale_couches || [0, 0, 1]);
   const mat = new THREE.MeshStandardMaterial({ color: p.couleur, roughness: 0.62, metalness: 0,
     transparent: !!p.contexte, opacity: p.contexte ? 0.35 : 1, depthWrite: !p.contexte });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.userData = { debug: mat, rendu: p.contexte ? matContexte : matFilament };
+  mesh.userData = { debug: mat, rendu: verre ? matVerre : nouveauFilament() };
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   models.add(mesh);
@@ -329,13 +370,16 @@ const dirs = {
   side: new THREE.Vector3(1, 0, 0.0001),
   rear: new THREE.Vector3(-1, 1.25, 0.9),
 };
-function setView(name, marge = 1.08) {
+// cible : point visé en fractions de la boîte englobante [fx, fy, fz] (0…1), défaut = centre
+function setView(name, marge = 1.08, cible = null) {
   const d = dirs[name].clone().normalize();
   const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
   const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect);
   const dist = radius / Math.sin(Math.min(vHalf, hHalf)) * marge;
-  controls.target.copy(center);
-  camera.position.copy(center).addScaledVector(d, dist);
+  const vise = cible ? new THREE.Vector3(
+    box.min.x + cible[0] * size.x, box.min.y + cible[1] * size.y, box.min.z + cible[2] * size.z) : center;
+  controls.target.copy(vise);
+  camera.position.copy(vise).addScaledVector(d, dist);
   camera.near = dist / 100;
   camera.far = dist * 20;
   camera.updateProjectionMatrix();
@@ -391,7 +435,7 @@ function setRendu(on) {
   $("c-rendu").hidden = !on;
 }
 function setCouleur(hex) {
-  matFilament.color.set(hex);
+  for (const m of matsFilament) m.color.set(hex);
   $("c-rendu").value = hex;
 }
 $("t-rendu").addEventListener("click", () => setRendu(!modeRendu));
@@ -412,5 +456,10 @@ $("status").textContent = `Ensemble ${fmt(size.x, 1)} × ${fmt(size.y, 1)} × ${
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
 // Crochet d'automatisation (tools/render.py)
-window.vue3d = { vue: setView, rendu: setRendu, couleur: setCouleur, pret: true };
+window.vue3d = {
+  vue: setView, rendu: setRendu, couleur: setCouleur,
+  scene, camera, renderer, controls, models, sol, box, center, radius,
+  pause: () => renderer.setAnimationLoop(null),
+  pret: true,
+};
 </script>

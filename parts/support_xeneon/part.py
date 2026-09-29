@@ -191,6 +191,20 @@ def build_renfort():
     return renfort - arche
 
 
+def couches_impression() -> dict[str, tuple[float, float, float]]:
+    """Direction d'empilement des couches par pièce, en position d'usage (stries du rendu).
+
+    Pieds imprimés debout → Z ; coque imprimée face contre le plateau → normale à sa face,
+    inclinée de ANGLE ; centre sans renfort imprimé à plat → idem coque.
+    """
+    a = math.radians(ANGLE)
+    incline = (0.0, -math.sin(a), math.cos(a))
+    couches = {"coque_gauche": incline, "coque_droite": incline}
+    if not AVEC_RENFORT:
+        couches["pied_centre"] = incline
+    return couches
+
+
 def _joint(piece, x0: float, sens: float, peau: float, longueur: float):
     """Prisme issu de la section de `piece` au plan X = x0, réduite de `peau`, prolongé vers `sens`."""
     solides = []
@@ -296,4 +310,7 @@ if __name__ == "__main__":
         "pied_droite": Location((-COUPE_X + 20, -dy, 0)),
     }
     params = {k: v for k, v in globals().items() if k.isupper() and isinstance(v, (int, float))}
-    export_all(parties, "support_xeneon", OUT_DIR, params, contexte=contexte, disposition=disposition)
+    # Direction des couches (stries du rendu) : pieds imprimés debout → Z ; coque imprimée face
+    # contre le plateau → normale à sa face, inclinée de ANGLE ; centre sans renfort imprimé à plat.
+    couches = couches_impression()
+    export_all(parties, "support_xeneon", OUT_DIR, params, contexte=contexte, disposition=disposition, couches=couches)

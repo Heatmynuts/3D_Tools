@@ -18,7 +18,13 @@
       ],
       "volume_cm3": 52.72,
       "tient_dans_h2d": true,
-      "couleur": "#3373d9"
+      "couleur": "#3373d9",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        -0.7071067811865475,
+        0.7071067811865476
+      ]
     },
     {
       "nom": "coque_droite",
@@ -30,7 +36,13 @@
       ],
       "volume_cm3": 47.37,
       "tient_dans_h2d": true,
-      "couleur": "#e68c26"
+      "couleur": "#e68c26",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        -0.7071067811865475,
+        0.7071067811865476
+      ]
     },
     {
       "nom": "pied_gauche",
@@ -42,7 +54,13 @@
       ],
       "volume_cm3": 116.22,
       "tient_dans_h2d": true,
-      "couleur": "#4cb266"
+      "couleur": "#4cb266",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        0.0,
+        1.0
+      ]
     },
     {
       "nom": "pied_centre",
@@ -54,7 +72,13 @@
       ],
       "volume_cm3": 199.64,
       "tient_dans_h2d": true,
-      "couleur": "#bf4c8c"
+      "couleur": "#bf4c8c",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        0.0,
+        1.0
+      ]
     },
     {
       "nom": "pied_droite",
@@ -66,7 +90,13 @@
       ],
       "volume_cm3": 116.22,
       "tient_dans_h2d": true,
-      "couleur": "#3373d9"
+      "couleur": "#3373d9",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        0.0,
+        1.0
+      ]
     },
     {
       "nom": "ecran",
@@ -79,7 +109,13 @@
       "volume_cm3": 759.45,
       "tient_dans_h2d": true,
       "couleur": "#8c949e",
-      "contexte": true
+      "contexte": true,
+      "matiere": "verre",
+      "normale_couches": [
+        0.0,
+        0.0,
+        1.0
+      ]
     }
   ],
   "parametres": {}

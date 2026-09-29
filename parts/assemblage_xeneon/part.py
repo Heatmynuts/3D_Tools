@@ -55,4 +55,5 @@ if __name__ == "__main__":
         source="Assemblage de contrôle (non imprimé). Écran : modèle officiel Corsair, CC-BY : "
         "https://www.printables.com/model/1651858",
         contexte={"ecran": ecran},
+        couches=pied.couches_impression(),
     )

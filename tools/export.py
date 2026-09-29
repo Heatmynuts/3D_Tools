@@ -53,6 +53,7 @@ def export_all(
     source: str | None = None,
     contexte: dict[str, Part] | None = None,
     disposition: dict[str, Location] | None = None,
+    couches: dict[str, tuple[float, float, float]] | None = None,
 ) -> None:
     """Exporte chaque pièce en STEP/STL, l'ensemble en 3MF et GLB, et affiche les contrôles.
 
@@ -63,6 +64,9 @@ def export_all(
                sans STEP, 3MF ni contrôle de volume.
     disposition : déplacement de chaque pièce pour le plateau, appliqué au 3MF seulement
                   (la vue 3D et les STEP/STL restent en position assemblée).
+    couches : direction d'empilement des couches d'impression de chaque pièce, dans le repère
+              de la vue (défaut (0, 0, 1) : pièce exportée dans sa position d'impression).
+              Sert aux stries du mode Rendu. Pièces de contexte : « ecran* » = verre, sinon filament.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     tol, ang = MESH_REFERENCE if reference else MESH_PIECE
@@ -95,6 +99,8 @@ def export_all(
                 "volume_cm3": round(shape.volume / 1000, 2),
                 "tient_dans_h2d": fits,
                 "couleur": "#%02x%02x%02x" % tuple(round(c * 255) for c in color),
+                "matiere": "filament",
+                "normale_couches": list((couches or {}).get(label, (0.0, 0.0, 1.0))),
             }
         )
 
@@ -112,6 +118,8 @@ def export_all(
                 "tient_dans_h2d": True,
                 "couleur": "#8c949e",
                 "contexte": True,
+                "matiere": "verre" if label.startswith("ecran") else "filament",
+                "normale_couches": list((couches or {}).get(label, (0.0, 0.0, 1.0))),
             }
         )
 

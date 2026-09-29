@@ -35,7 +35,7 @@ viewer/template.html    # gabarit de la vue 3D (three.js)
    `parts/<nom>/out/<nom>_vue3d.html` en Artifact. Le lien est noté dans `parts/<nom>/vue3d.url` :
    s'il existe, republier avec ce `url` (même lien) ; sinon créer puis écrire le lien dans ce fichier.
 7. Livrer : lien de la vue 3D + rendus PNG (`python3 tools/render.py parts/<nom> [--couleur "#hex"]`,
-   relus avant envoi) + résumé (dimensions, matière conseillée, orientation, supports)
+   vue `detail` = gros plan des stries ; `--photo` = lancer de rayons, ~3-4 min/image ; relus avant envoi) + résumé (dimensions, matière conseillée, orientation, supports)
    + chemin du `.3mf`/`.step` pour Bambu Studio. La vue 3D a un bouton « Rendu » (aspect réaliste).
 8. Commit + push sur la branche de travail.
 9. Impression (local uniquement) : vérifier l'état de la H2D et l'AMS, résumer

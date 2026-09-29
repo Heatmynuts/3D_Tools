@@ -18,7 +18,13 @@
       ],
       "volume_cm3": 29.98,
       "tient_dans_h2d": true,
-      "couleur": "#3373d9"
+      "couleur": "#3373d9",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        0.0,
+        1.0
+      ]
     },
     {
       "nom": "couvercle",
@@ -30,7 +36,13 @@
       ],
       "volume_cm3": 11.2,
       "tient_dans_h2d": true,
-      "couleur": "#e68c26"
+      "couleur": "#e68c26",
+      "matiere": "filament",
+      "normale_couches": [
+        0.0,
+        0.0,
+        1.0
+      ]
     }
   ],
   "parametres": {
