@@ -2,8 +2,9 @@
 
 - L'écran reste visible et tactile : lèvre avant qui recouvre seulement le cadre (bezel).
 - Dos ouvert, sauf un rebord sur lequel repose la face arrière plane de l'écran.
-- Coupe au plan X = 0 (écran 372 mm > plateau H2D 325 mm) ; ceinture épaissie à la jonction
-  qui porte 4 tenons en losange (faces à 45° → sans support, wiki Bambu « surplombs »).
+- Coupe au plan X = 0 (écran 372 mm > plateau H2D 325 mm) : languette / rainure intérieures
+  dans l'épaisseur des parois → extérieur lisse, seul un trait de joint reste visible.
+- Arêtes extérieures arrondies (RAYON_ARETE), même rayon que le pied.
 - Impression : face avant (côté écran) contre le plateau → plus belle finition côté visible ;
   seul le rebord arrière (caché) demande des supports (interface PLA, voir IMPRESSION.md).
 - 4 trous dans le rebord arrière aux vis d'angle (aimants d'origine) pour le pied aimanté.
@@ -18,6 +19,7 @@ from pathlib import Path
 
 from build123d import (
     Align,
+    Axis,
     Box,
     BuildPart,
     BuildSketch,
@@ -31,6 +33,8 @@ from build123d import (
     RectangleRounded,
     Rot,
     extrude,
+    fillet,
+    offset,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -58,7 +62,7 @@ VITRE_Y_MAX = 46.7
 
 # ---------------------------------------------------------------- PARAMÈTRES (mm)
 JEU_ECRAN = 0.3            # jeu coque/écran (plage Bambu 0,15–0,3 pour assemblages, par analogie)
-EPAISSEUR_PAROI = 2.0
+EPAISSEUR_PAROI = 3.2       # 0,9 (peau) + 1,4 (rainure) + 0,9 (peau)
 EPAISSEUR_DOS = 2.0
 EPAISSEUR_LEVRE = 2.0
 LEVRE_AVANT = 3.0          # recouvrement du cadre avant ; cadre le plus étroit = 5,2 mm
@@ -70,12 +74,11 @@ EPAISSEUR_VERRE = 0.0      # verre trempé : À RENSEIGNER avant impression (0 =
 VERRE_L = 0.0              # longueur du verre (X) : À RENSEIGNER
 VERRE_W = 0.0              # largeur du verre (Y) : À RENSEIGNER
 
-BANDE_LARGEUR = 20.0       # ceinture de jonction (le long de X)
-BANDE_SURPLUS = 4.0        # épaisseur ajoutée sur les flancs à la jonction
-TENON_COTE = 2.5           # tenon carré tourné à 45° (losange)
-TENON_LONG = 6.0
-JEU_TENON = 0.2            # plage Bambu 0,15–0,3 mm
-PROFONDEUR_MARGE = 0.5     # logement plus profond que le tenon
+RAYON_ARETE = 1.5          # arrondi des arêtes extérieures (commun coque / pied)
+LANGUETTE_PEAU = 0.9       # matière de chaque côté de la rainure (≥ 2 largeurs de ligne, déduction)
+JEU_LANGUETTE = 0.2        # plage Bambu 0,15–0,3 mm
+LANGUETTE_PROF = 5.0       # longueur de la languette
+PROFONDEUR_MARGE = 0.5     # rainure plus profonde que la languette
 
 ECART_PLATEAU = 10.0       # espace entre les deux moitiés sur le plateau (3MF)
 ZONE_COMMUNE = (300.0, 320.0)  # zone accessible aux deux buses H2D (wiki « printable range »)
@@ -92,18 +95,17 @@ Z_CAVITE = EPAISSEUR_DOS
 H_CAVITE = ECRAN_H + EPAISSEUR_VERRE + JEU_ECRAN
 H_TOTAL = EPAISSEUR_DOS + H_CAVITE + EPAISSEUR_LEVRE
 
-# Tenons : au milieu de l'épaisseur des flancs à la jonction, à 1/3 et 2/3 de la hauteur.
-TENON_Y = IN_W / 2 + (EPAISSEUR_PAROI + BANDE_SURPLUS) / 2
-TENON_Z = (H_TOTAL / 3, 2 * H_TOTAL / 3)
+OUT_R = IN_R + EPAISSEUR_PAROI
 
 
 def build_coque():
     """Coque complète (avant découpe), dos sur le plateau."""
     with BuildPart() as coque:
         with BuildSketch():
-            RectangleRounded(OUT_L, OUT_W, IN_R + EPAISSEUR_PAROI)
+            RectangleRounded(OUT_L, OUT_W, OUT_R)
         extrude(amount=H_TOTAL)
-        Box(BANDE_LARGEUR, OUT_W + 2 * BANDE_SURPLUS, H_TOTAL, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        aretes = coque.edges().group_by(Axis.Z)
+        fillet(aretes[0] + aretes[-1], radius=RAYON_ARETE)
 
         # Logement de l'écran
         with BuildSketch(Plane.XY.offset(Z_CAVITE)):
@@ -133,19 +135,26 @@ def build_coque():
     return coque.part
 
 
-def _losange(cote: float, longueur: float, y: float, z: float):
-    """Prisme à section carrée tournée de 45° (losange), axe le long de +X depuis X = 0."""
-    return Pos(0, y, z) * Rot(45, 0, 0) * Box(longueur, cote, cote, align=(Align.MIN, Align.CENTER, Align.CENTER))
+def _joint(coque, peau: float, longueur: float):
+    """Prisme issu de la section de coque à X = 0, réduite de `peau`, prolongé vers +X."""
+    solides = []
+    for f in coque.intersect(Plane.YZ).faces():
+        reduite = offset(f, amount=-peau)
+        for g in reduite.faces():
+            if g.area > 1:
+                solides.append(extrude(g, amount=longueur, dir=(1, 0, 0)))
+    return solides
 
 
 def build_moities():
     coque = build_coque()
-    gauche = coque & Box(OUT_L, OUT_W + 2 * BANDE_SURPLUS, H_TOTAL, align=(Align.MAX, Align.CENTER, Align.MIN))
-    droite = coque & Box(OUT_L, OUT_W + 2 * BANDE_SURPLUS, H_TOTAL, align=(Align.MIN, Align.CENTER, Align.MIN))
-    for y in (-TENON_Y, TENON_Y):
-        for z in TENON_Z:
-            gauche += _losange(TENON_COTE, TENON_LONG, y, z)
-            droite -= _losange(TENON_COTE + 2 * JEU_TENON, TENON_LONG + PROFONDEUR_MARGE, y, z)
+    grand = 2 * OUT_L
+    gauche = coque & Box(grand, grand, grand, align=(Align.MAX, Align.CENTER, Align.CENTER))
+    droite = coque & Box(grand, grand, grand, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    for languette in _joint(coque, LANGUETTE_PEAU + JEU_LANGUETTE, LANGUETTE_PROF):
+        gauche += languette
+    for rainure in _joint(coque, LANGUETTE_PEAU, LANGUETTE_PROF + PROFONDEUR_MARGE):
+        droite -= rainure
     return gauche, droite
 
 
@@ -202,7 +211,7 @@ if __name__ == "__main__":
     controles_verre_et_vue()
 
     # Plateau : face avant en bas, moitiés côte à côte en Y, centrées dans la zone commune aux 2 buses.
-    dy = (OUT_W + 2 * BANDE_SURPLUS + ECART_PLATEAU) / 2
+    dy = (OUT_W + ECART_PLATEAU) / 2
     disposition = {
         "coque_gauche": orienter_impression(gauche, 0, dy),
         "coque_droite": orienter_impression(droite, 0, -dy),

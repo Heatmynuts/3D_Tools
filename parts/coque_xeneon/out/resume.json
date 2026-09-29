@@ -12,11 +12,11 @@
       "nom": "coque_gauche",
       "stl": "coque_xeneon_coque_gauche.stl",
       "dimensions_mm": [
-        194.35,
-        132.1,
+        194.55,
+        126.5,
         24.05
       ],
-      "volume_cm3": 40.77,
+      "volume_cm3": 52.72,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
     },
@@ -24,11 +24,11 @@
       "nom": "coque_droite",
       "stl": "coque_xeneon_coque_droite.stl",
       "dimensions_mm": [
-        188.35,
-        132.1,
+        189.55,
+        126.5,
         24.05
       ],
-      "volume_cm3": 35.66,
+      "volume_cm3": 47.37,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
     },
@@ -61,7 +61,7 @@
     "VITRE_Y_MIN": -53.1,
     "VITRE_Y_MAX": 46.7,
     "JEU_ECRAN": 0.3,
-    "EPAISSEUR_PAROI": 2.0,
+    "EPAISSEUR_PAROI": 3.2,
     "EPAISSEUR_DOS": 2.0,
     "EPAISSEUR_LEVRE": 2.0,
     "LEVRE_AVANT": 3.0,
@@ -70,21 +70,20 @@
     "EPAISSEUR_VERRE": 0.0,
     "VERRE_L": 0.0,
     "VERRE_W": 0.0,
-    "BANDE_LARGEUR": 20.0,
-    "BANDE_SURPLUS": 4.0,
-    "TENON_COTE": 2.5,
-    "TENON_LONG": 6.0,
-    "JEU_TENON": 0.2,
+    "RAYON_ARETE": 1.5,
+    "LANGUETTE_PEAU": 0.9,
+    "JEU_LANGUETTE": 0.2,
+    "LANGUETTE_PROF": 5.0,
     "PROFONDEUR_MARGE": 0.5,
     "ECART_PLATEAU": 10.0,
     "IN_L": 372.70000000000005,
     "IN_W": 120.1,
     "IN_R": 7.3,
-    "OUT_L": 376.70000000000005,
-    "OUT_W": 124.1,
+    "OUT_L": 379.1,
+    "OUT_W": 126.5,
     "Z_CAVITE": 2.0,
     "H_CAVITE": 20.05,
     "H_TOTAL": 24.05,
-    "TENON_Y": 63.05
+    "OUT_R": 10.5
   }
 }

@@ -12,11 +12,11 @@
       "nom": "pied_gauche",
       "stl": "support_xeneon_pied_gauche.stl",
       "dimensions_mm": [
-        132.0,
-        102.57,
-        95.49
+        198.25,
+        113.27,
+        111.89
       ],
-      "volume_cm3": 66.06,
+      "volume_cm3": 218.27,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
     },
@@ -24,11 +24,11 @@
       "nom": "pied_droite",
       "stl": "support_xeneon_pied_droite.stl",
       "dimensions_mm": [
-        246.0,
-        102.57,
-        95.49
+        193.25,
+        113.27,
+        111.89
       ],
-      "volume_cm3": 102.56,
+      "volume_cm3": 181.26,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
     },
@@ -36,11 +36,11 @@
       "nom": "coque_gauche",
       "stl": "support_xeneon_coque_gauche.stl",
       "dimensions_mm": [
-        194.35,
-        110.41,
-        110.41
+        194.55,
+        105.21,
+        105.21
       ],
-      "volume_cm3": 40.77,
+      "volume_cm3": 52.72,
       "tient_dans_h2d": true,
       "couleur": "#8c949e",
       "contexte": true
@@ -49,11 +49,11 @@
       "nom": "coque_droite",
       "stl": "support_xeneon_coque_droite.stl",
       "dimensions_mm": [
-        188.35,
-        110.41,
-        110.41
+        189.55,
+        105.21,
+        105.21
       ],
-      "volume_cm3": 35.66,
+      "volume_cm3": 47.37,
       "tient_dans_h2d": true,
       "couleur": "#8c949e",
       "contexte": true
@@ -74,35 +74,28 @@
   ],
   "parametres": {
     "ANGLE": 45.0,
-    "FLANC_LARGEUR": 14.0,
-    "FLANC_CADRE": 7.0,
-    "EPAISSEUR_PLAQUE": 5.0,
-    "REBORD_HAUTEUR": 8.0,
-    "REBORD_EPAISSEUR": 5.0,
-    "RAIL_PROFONDEUR": 15.0,
+    "EPAISSEUR_PLAQUE": 4.0,
+    "REBORD_EPAISSEUR": 3.2,
     "JEU_PIED": 0.5,
-    "MARGE_HAUT": 4.0,
-    "PANNEAU_HAUTEUR": 35.0,
-    "PANNEAU_EPAISSEUR": 5.0,
-    "ENCOCHE_RAYON": 14.0,
+    "FLANC_LARGEUR": 18.0,
+    "RECOUVREMENT_FLANC": 1.0,
+    "ASSISE": 2.0,
     "JEU_PLOT": 0.2,
     "ECART_ECRAN": 0.2,
     "AIMANT_D": 8.0,
     "AIMANT_H": 3.0,
     "JEU_AIMANT": 0.1,
-    "DECALAGE_JONCTION": 60.0,
-    "TENON_COTE": 2.0,
-    "TENON_LONG": 6.0,
-    "JEU_TENON": 0.2,
-    "PROFONDEUR_MARGE": 0.5,
     "ECART_PLATEAU": 15.0,
     "PLOT_D": 11.6,
-    "Y_BAS": -62.55,
-    "Y_HAUT": 62.5,
     "Z_DOS": -2.0,
-    "Z_PLAQUE": -7.0,
-    "X_BOUT": 186.0,
-    "Z_DECALAGE": 52.71481053745711,
-    "Y_ARRIERE": 49.14392129246505
+    "Z_AVANT": 22.05,
+    "Z_PLAQUE": -6.0,
+    "POCHE_L": 380.1,
+    "POCHE_W": 127.5,
+    "POCHE_R": 11.0,
+    "B_L": 386.5,
+    "B_W": 133.9,
+    "B_R": 14.2,
+    "Z_DECALAGE": 49.58343968755864
   }
 }

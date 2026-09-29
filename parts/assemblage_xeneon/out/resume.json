@@ -12,11 +12,11 @@
       "nom": "coque_gauche",
       "stl": "assemblage_xeneon_coque_gauche.stl",
       "dimensions_mm": [
-        194.35,
-        110.41,
-        110.41
+        194.55,
+        105.21,
+        105.21
       ],
-      "volume_cm3": 40.77,
+      "volume_cm3": 52.72,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
     },
@@ -24,11 +24,11 @@
       "nom": "coque_droite",
       "stl": "assemblage_xeneon_coque_droite.stl",
       "dimensions_mm": [
-        188.35,
-        110.41,
-        110.41
+        189.55,
+        105.21,
+        105.21
       ],
-      "volume_cm3": 35.66,
+      "volume_cm3": 47.37,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
     },
@@ -36,11 +36,11 @@
       "nom": "pied_gauche",
       "stl": "assemblage_xeneon_pied_gauche.stl",
       "dimensions_mm": [
-        132.0,
-        102.57,
-        95.49
+        198.25,
+        113.27,
+        111.89
       ],
-      "volume_cm3": 66.06,
+      "volume_cm3": 218.27,
       "tient_dans_h2d": true,
       "couleur": "#4cb266"
     },
@@ -48,11 +48,11 @@
       "nom": "pied_droite",
       "stl": "assemblage_xeneon_pied_droite.stl",
       "dimensions_mm": [
-        246.0,
-        102.57,
-        95.49
+        193.25,
+        113.27,
+        111.89
       ],
-      "volume_cm3": 102.56,
+      "volume_cm3": 181.26,
       "tient_dans_h2d": true,
       "couleur": "#bf4c8c"
     },
