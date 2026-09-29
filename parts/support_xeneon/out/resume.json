@@ -12,23 +12,23 @@
       "nom": "pied_gauche",
       "stl": "support_xeneon_pied_gauche.stl",
       "dimensions_mm": [
-        24.0,
-        101.15,
-        94.08
+        132.0,
+        102.57,
+        95.49
       ],
-      "volume_cm3": 113.34,
+      "volume_cm3": 66.06,
       "tient_dans_h2d": true,
       "couleur": "#3373d9"
     },
     {
-      "nom": "pied_droit",
-      "stl": "support_xeneon_pied_droit.stl",
+      "nom": "pied_droite",
+      "stl": "support_xeneon_pied_droite.stl",
       "dimensions_mm": [
-        24.0,
-        101.15,
-        94.08
+        246.0,
+        102.57,
+        95.49
       ],
-      "volume_cm3": 113.34,
+      "volume_cm3": 102.56,
       "tient_dans_h2d": true,
       "couleur": "#e68c26"
     },
@@ -74,21 +74,35 @@
   ],
   "parametres": {
     "ANGLE": 45.0,
-    "PIED_LARGEUR": 24.0,
-    "EPAISSEUR_PLAQUE": 4.0,
+    "FLANC_LARGEUR": 14.0,
+    "FLANC_CADRE": 7.0,
+    "EPAISSEUR_PLAQUE": 5.0,
     "REBORD_HAUTEUR": 8.0,
-    "REBORD_EPAISSEUR": 4.0,
+    "REBORD_EPAISSEUR": 5.0,
+    "RAIL_PROFONDEUR": 15.0,
     "JEU_PIED": 0.5,
     "MARGE_HAUT": 4.0,
+    "PANNEAU_HAUTEUR": 35.0,
+    "PANNEAU_EPAISSEUR": 5.0,
+    "ENCOCHE_RAYON": 14.0,
     "JEU_PLOT": 0.2,
     "ECART_ECRAN": 0.2,
     "AIMANT_D": 8.0,
     "AIMANT_H": 3.0,
     "JEU_AIMANT": 0.1,
+    "DECALAGE_JONCTION": 60.0,
+    "TENON_COTE": 2.0,
+    "TENON_LONG": 6.0,
+    "JEU_TENON": 0.2,
+    "PROFONDEUR_MARGE": 0.5,
     "ECART_PLATEAU": 15.0,
     "PLOT_D": 11.6,
     "Y_BAS": -62.55,
     "Y_HAUT": 62.5,
-    "Z_DOS": -2.0
+    "Z_DOS": -2.0,
+    "Z_PLAQUE": -7.0,
+    "X_BOUT": 186.0,
+    "Z_DECALAGE": 52.71481053745711,
+    "Y_ARRIERE": 49.14392129246505
   }
 }
