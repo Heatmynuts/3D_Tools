@@ -1,0 +1,15 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+# Secrets
+backend/.env
+# Node
+frontend/node_modules/
+frontend/dist/
+# Données locales (projets, versions)
+data/
+.DS_Store
+
+# Bundled local CAD/slicer runtimes
+tools/
